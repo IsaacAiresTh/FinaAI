@@ -17,9 +17,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finai.R
+import com.example.finai.ui.components.CButtonAuth
+import com.example.finai.ui.components.COutlinedTextField
 
 @Composable
 fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit) {
@@ -68,59 +71,29 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit) {
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Campo de E-mail
-                    OutlinedTextField(
+                    COutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("E-mail") },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color(0xFFFFC107),
-                            unfocusedIndicatorColor = Color.Gray,
-                            focusedLabelColor = Color(0xFFFFC107),
-                            unfocusedLabelColor = Color.Gray,
-                            cursorColor = Color(0xFFFFC107),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
-                        ),
+                        label = "E-mail",
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Campo de Senha
-                    OutlinedTextField(
+                    COutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Senha") },
-                        modifier = Modifier.fillMaxWidth(),
+                        label = "Senha",
                         visualTransformation = PasswordVisualTransformation(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color(0xFFFFC107),
-                            unfocusedIndicatorColor = Color.Gray,
-                            focusedLabelColor = Color(0xFFFFC107),
-                            unfocusedLabelColor = Color.Gray,
-                            cursorColor = Color(0xFFFFC107),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
-                        ),
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(32.dp))
 
                     // Botão Entrar
-                    Button(
+                    CButtonAuth(
                         onClick = onLoginClick,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
-                    ) {
-                        Text(text = "ENTRAR", color = Color.Black, fontWeight = FontWeight.Bold)
-                    }
+                        text = "ENTRAR"
+                    )
                 }
             }
 
@@ -138,4 +111,13 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit) {
             }
         }
     }
+}
+
+@Preview
+@Composable
+private fun LoginScreenPreview() {
+    LoginScreen(
+        onLoginClick = {},
+        onSignUpClick = {}
+    )
 }
