@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.finai.ui.screens.LoginScreen
+import com.example.finai.ui.screens.SignUpScreen
 import com.example.finai.ui.screens.SplashScreen
 import com.example.finai.ui.theme.FinAiTheme
 
@@ -38,7 +39,18 @@ fun AppNavigation() {
                 },
                 onSignUpClick = {
                     // Navega para a tela de cadastro
-                    // navController.navigate("signup")
+                     navController.navigate("signup")
+                }
+            )
+        }
+        composable("signup") {
+            SignUpScreen(
+                onSignUpClick = {
+                    // TODO:  adicionar a lógica de cadastro do usuario
+                },
+                onLoginClick = {
+                    // Fecha a tela de cadastro e volta para a tela de login
+                    navController.popBackStack()
                 }
             )
         }
