@@ -5,6 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.finai.ui.screens.LoginScreen
+import com.example.finai.ui.screens.MainScreen
 import com.example.finai.ui.screens.SignUpScreen
 import com.example.finai.ui.screens.SplashScreen
 
@@ -24,13 +25,15 @@ fun AppNavigation() {
         composable("login") {
             LoginScreen(
                 onLoginClick = {
-                    // Aqui vamos adicionar a lógica de login no futuro.
-                    // Por enquanto, podemos navegar para a tela principal (home).
-                    // navController.navigate("home")
+                    // Navega para a tela principal (MainScreen)
+                    navController.navigate("main") {
+                        // Limpa o back stack para que o usuário não possa voltar para a tela de login
+                        popUpTo("login") { inclusive = true }
+                    }
                 },
                 onSignUpClick = {
                     // Navega para a tela de cadastro
-                     navController.navigate("signup")
+                    navController.navigate("signup")
                 }
             )
         }
@@ -44,6 +47,9 @@ fun AppNavigation() {
                     navController.popBackStack()
                 }
             )
+        }
+        composable("main") {
+            MainScreen()
         }
     }
 }
