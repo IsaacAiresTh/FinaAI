@@ -24,19 +24,27 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.finai.R
 
-/*
-TODO: Colocar icone ao centro da bottom bar para upload de arquivos, seguindo o que esta no figma
- */
-
 @Composable
 fun CBottomNavBar(
     selectedItem: String,
     onItemSelected: (String) -> Unit
 ) {
+    // --- MUDANÇA AQUI ---
+    // Definimos os raios para o nosso "molde"
+    val cutoutRadius = 36.dp // (Tamanho do FAB 56dp / 2) + 8dp de margem
+    val topCornerRadius = 9.dp
+
+    // Criamos a forma
+    val bottomBarShape = BottomBarCutoutShape(
+        cutoutRadius = cutoutRadius,
+        topCornerRadius = topCornerRadius
+    )
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(topStart = 9.dp, topEnd = 9.dp),
-        color = Color(0xFFFFC800),
+        // --- MUDANÇA AQUI ---
+        shape = bottomBarShape, // Aplicamos a forma customizada
+        color = Color(0xFFFFC800), // Cor amarela
         tonalElevation = 4.dp
     ) {
         NavigationBar(
@@ -46,41 +54,51 @@ fun CBottomNavBar(
             val items = listOf(
                 BottomNavItem("home", R.drawable.ic_home),
                 BottomNavItem("trending", R.drawable.ic_trending),
+                BottomNavItem("DUMMY", 0), // O item "DUMMY" continua aqui
                 BottomNavItem("table", R.drawable.ic_table),
                 BottomNavItem("profile", R.drawable.ic_profile)
             )
+
             items.forEach { item ->
-                val isSelected = selectedItem == item.route
-                NavigationBarItem(
-                    selected = isSelected,
-                    onClick = { onItemSelected(item.route) },
-                    alwaysShowLabel = false,
-                    icon = {
-                        // background animado quando o icone e selecionado
-                        val backgroundColor by animateColorAsState(
-                            targetValue = if (isSelected) Color.White else Color.Transparent,
-                            animationSpec = tween(300)
-                        )
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(backgroundColor),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(id = item.icon),
-                                contentDescription = item.label,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.Black,
-                        unselectedIconColor = Color.Black,
-                        indicatorColor = Color.Transparent
+                if (item.route == "DUMMY") {
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = { },
+                        icon = { },
+                        enabled = false
                     )
-                )
+                } else {
+                    val isSelected = selectedItem == item.route
+                    NavigationBarItem(
+                        selected = isSelected,
+                        onClick = { onItemSelected(item.route) },
+                        alwaysShowLabel = false,
+                        icon = {
+                            val backgroundColor by animateColorAsState(
+                                targetValue = if (isSelected) Color.White else Color.Transparent,
+                                animationSpec = tween(300)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(backgroundColor),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = item.icon),
+                                    contentDescription = item.label,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.Black,
+                            unselectedIconColor = Color.Black,
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                }
             }
         }
     }

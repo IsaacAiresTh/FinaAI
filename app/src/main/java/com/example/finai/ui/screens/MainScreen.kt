@@ -1,15 +1,25 @@
 package com.example.finai.ui.screens
 
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.padding // <-- Import necessário
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.finai.R
 import com.example.finai.ui.components.CBottomNavBar
 
 @Composable
@@ -18,38 +28,60 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: "home"
 
-    // Scaffold fornece a estrutura básica de layout do Material Design
     Scaffold(
         bottomBar = {
-            // Renderiza o BottomBar personalizado
             CBottomNavBar(
                 selectedItem = currentRoute,
                 onItemSelected = {
-                    // Navega para a rota selecionada com lógica para otimizar a back stack.
                     navController.navigate(it) {
-                        // Evita o empilhamento de telas ao voltar para a tela inicial do gráfico.
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
-                        // Garante que haja apenas uma cópia de um destino na pilha.
                         launchSingleTop = true
-                        // Restaura o estado ao selecionar novamente um item já visitado.
                         restoreState = true
                     }
                 }
             )
-        }
-    ) { innerPadding ->
-        // NavHost hospeda as diferentes telas que podem ser navegadas pela BottomNavBar.
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate("upload") {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                shape = CircleShape,
+                containerColor = Color.White,
+                contentColor = Color.Black,
+                elevation = FloatingActionButtonDefaults.elevation(8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_upload),
+                    contentDescription = "Upload",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Center
+    ) { innerPadding -> // <-- ESTE É O PADDING IMPORTANTE
         NavHost(
             navController = navController,
             startDestination = "home",
-            modifier = Modifier.padding(innerPadding) // Aplica o padding interno do Scaffold.
+            // --- MUDANÇA AQUI ---
+            // Removemos o padding do NavHost
+            modifier = Modifier
         ) {
-            composable("home") { HomeScreen() }
-            composable("trending") { TrendingScreen() }
-            composable("table") { TableScreen() }
-            composable("profile") { ProfileScreen() }
+            // --- MUDANÇA AQUI ---
+            // E aplicamos o 'innerPadding' em CADA tela
+            composable("home") { HomeScreen(modifier = Modifier.padding(innerPadding)) }
+            composable("trending") { TrendingScreen(modifier = Modifier.padding(innerPadding)) }
+            composable("table") { TableScreen(modifier = Modifier.padding(innerPadding)) }
+            composable("profile") { ProfileScreen(modifier = Modifier.padding(innerPadding)) }
+            composable("upload") { UploadScreen(modifier = Modifier.padding(innerPadding)) }
         }
     }
 }
