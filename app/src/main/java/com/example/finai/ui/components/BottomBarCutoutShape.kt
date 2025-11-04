@@ -1,6 +1,5 @@
 package com.example.finai.ui.components
 
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -14,7 +13,7 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Uma forma customizada para a Bottom App Bar com um recorte circular no centro.
- * @param cutoutRadius O raio do recorte (metade do tamanho do FAB + margem)
+ * @param cutoutRadius O raio do recorte
  * @param topCornerRadius O raio dos cantos superiores da barra
  */
 class BottomBarCutoutShape(
@@ -27,15 +26,18 @@ class BottomBarCutoutShape(
         density: Density
     ): Outline {
         val path = Path().apply {
-            // Converter Dp para Px
             val radiusPx = with(density) { cutoutRadius.toPx() }
             val cornerPx = with(density) { topCornerRadius.toPx() }
-
-            // O FAB é centrado, então o recorte é centrado
             val cutoutCenter = size.width / 2
 
-            // Começa do canto inferior esquerdo e sobe para o canto superior esquerdo
+            // Adiciona uma pequena margem ao redor do recorte para suavizar
+            val cutoutMargin = 2.dp.value * density.density
+            val actualRadius = radiusPx + cutoutMargin
+
+            // Começa do canto inferior esquerdo
             moveTo(0f, size.height)
+
+            // Sobe até o início do canto superior esquerdo
             lineTo(0f, cornerPx)
 
             // Arco do canto superior esquerdo
@@ -52,13 +54,15 @@ class BottomBarCutoutShape(
             )
 
             // Linha superior até o início do recorte
-            lineTo(cutoutCenter - radiusPx, 0f)
+            lineTo(cutoutCenter - actualRadius, 0f)
 
-            // Arco do recorte (semicírculo)
+            // Arco do recorte (semicírculo invertido)
             arcTo(
                 rect = Rect(
-                    center = Offset(cutoutCenter, 0f),
-                    radius = radiusPx
+                    left = cutoutCenter - actualRadius,
+                    top = -actualRadius,
+                    right = cutoutCenter + actualRadius,
+                    bottom = actualRadius
                 ),
                 startAngleDegrees = 180f,
                 sweepAngleDegrees = -180f,
@@ -84,7 +88,7 @@ class BottomBarCutoutShape(
             // Linha da direita até o canto inferior direito
             lineTo(size.width, size.height)
 
-            // Linha inferior
+            // Linha inferior e fecha o caminho
             lineTo(0f, size.height)
             close()
         }

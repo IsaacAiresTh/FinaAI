@@ -1,6 +1,7 @@
 package com.example.finai.ui.screens
 
-import androidx.compose.foundation.layout.padding // <-- Import necessário
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FabPosition
@@ -29,6 +30,8 @@ fun MainScreen() {
     val currentRoute = navBackStackEntry?.destination?.route ?: "home"
 
     Scaffold(
+        containerColor = Color.Transparent, // Remove fundo branco
+        contentColor = Color.White,
         bottomBar = {
             CBottomNavBar(
                 selectedItem = currentRoute,
@@ -57,7 +60,13 @@ fun MainScreen() {
                 shape = CircleShape,
                 containerColor = Color.White,
                 contentColor = Color.Black,
-                elevation = FloatingActionButtonDefaults.elevation(8.dp)
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 6.dp,
+                    pressedElevation = 8.dp
+                ),
+                modifier = Modifier
+                    .size(56.dp)
+                    .offset(y = 32.dp) // Aumentado para descer mais o botão
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_upload),
@@ -67,16 +76,12 @@ fun MainScreen() {
             }
         },
         floatingActionButtonPosition = FabPosition.Center
-    ) { innerPadding -> // <-- ESTE É O PADDING IMPORTANTE
+    ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = "home",
-            // --- MUDANÇA AQUI ---
-            // Removemos o padding do NavHost
             modifier = Modifier
         ) {
-            // --- MUDANÇA AQUI ---
-            // E aplicamos o 'innerPadding' em CADA tela
             composable("home") { HomeScreen(modifier = Modifier.padding(innerPadding)) }
             composable("trending") { TrendingScreen(modifier = Modifier.padding(innerPadding)) }
             composable("table") { TableScreen(modifier = Modifier.padding(innerPadding)) }

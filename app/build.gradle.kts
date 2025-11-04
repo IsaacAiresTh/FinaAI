@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.finai"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.finai"
@@ -40,7 +40,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -56,6 +55,13 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Navegação
     implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // Ícones estendidos
     implementation("androidx.compose.material:material-icons-extended")
+
+    // Coil para carregar imagens
+    implementation("io.coil-kt:coil-compose:2.5.0")
 }
