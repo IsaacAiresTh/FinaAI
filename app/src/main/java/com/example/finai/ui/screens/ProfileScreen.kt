@@ -28,10 +28,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController // IMPORTANTE PARA O PREVIEW
 import com.example.finai.ui.theme.FinAiTheme
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
+fun ProfileScreen(modifier: Modifier = Modifier, navController: NavHostController) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -92,7 +94,9 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { /* TODO: Adicionar ação de clique */ },
+                    .clickable {
+                        navController.navigate("edit_salary_limit") // <-- ATUALIZE AQUI
+                    },
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF363636))
             ) {
@@ -130,38 +134,38 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                     ProfileOptionItem(
                         icon = Icons.Default.Tune,
                         text = "Preferências",
-                        onClick = { /* TODO */ }
+                        onClick = { navController.navigate("preferences") } // <-- CORRIGIDO
                     )
                     Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                     ProfileOptionItem(
                         icon = Icons.Default.NotificationsNone,
                         text = "Notificações",
-                        onClick = { /* TODO */ }
+                        onClick = { navController.navigate("notifications") } // <-- CORRIGIDO
                     )
                     Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                     ProfileOptionItem(
                         icon = Icons.Default.Shield,
                         text = "Segurança",
-                        onClick = { /* TODO */ }
+                        onClick = { navController.navigate("security") } // <-- CORRIGIDO
                     )
                     Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                     ProfileOptionItem(
                         icon = Icons.Outlined.Accessibility,
                         text = "Acessibilidade",
-                        onClick = { /* TODO */ }
+                        onClick = { navController.navigate("accessibility") } // <-- CORRIGIDO
                     )
                     Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                     ProfileOptionItem(
                         icon = Icons.Default.HelpOutline,
                         text = "Contate-nos",
-                        onClick = { /* TODO */ }
+                        onClick = { navController.navigate("contact_us") } // <-- CORRIGIDO
                     )
                     Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                     ProfileOptionItem(
                         icon = Icons.Default.Logout,
                         text = "Sair",
                         color = Color(0xFFF44336), // Vermelho para "Sair"
-                        onClick = { /* TODO */ }
+                        onClick = { /* TODO: Adicionar lógica de Logout e navegar para login */ }
                     )
                 }
             }
@@ -204,6 +208,7 @@ private fun ProfileOptionItem(
 @Composable
 private fun ProfileScreenPreview() {
     FinAiTheme {
-        ProfileScreen()
+        // CORRIGIDO: O Preview precisa de um NavController "falso" para compilar
+        ProfileScreen(navController = rememberNavController())
     }
 }

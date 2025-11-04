@@ -85,8 +85,34 @@ fun MainScreen() {
             composable("home") { HomeScreen(modifier = Modifier.padding(innerPadding)) }
             composable("trending") { TrendingScreen(modifier = Modifier.padding(innerPadding)) }
             composable("table") { TableScreen(modifier = Modifier.padding(innerPadding)) }
-            composable("profile") { ProfileScreen(modifier = Modifier.padding(innerPadding)) }
+            composable("profile") {
+                ProfileScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    navController = navController // Passando o controlador
+                )
+            }
             composable("upload") { UploadScreen(modifier = Modifier.padding(innerPadding)) }
+            // NOVAS TELAS (elas não usam innerPadding pois não têm BottomBar)
+            composable("preferences") {
+                PreferencesScreen(onBackClick = { navController.popBackStack() })
+            }
+            composable("notifications") {
+                NotificationsScreen(onBackClick = { navController.popBackStack() })
+            }
+            composable("security") {
+                SecurityScreen(onBackClick = { navController.popBackStack() })
+            }
+            composable("accessibility") {
+                AccessibilityScreen(onBackClick = { navController.popBackStack() })
+            }
+            composable("contact_us") {
+                ContactUsScreen(onBackClick = { navController.popBackStack() })
+            }
+
+            composable("edit_salary_limit") {
+                EditSalaryLimitScreen(onBackClick = { navController.popBackStack() })
+            }
         }
     }
 }
+
