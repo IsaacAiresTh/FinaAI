@@ -64,4 +64,7 @@ dependencies {
 
     // Coil para carregar imagens
     implementation("io.coil-kt:coil-compose:2.5.0")
+
+    implementation("cz.adaptech.tesseract4android:tesseract4android:4.9.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
 }
