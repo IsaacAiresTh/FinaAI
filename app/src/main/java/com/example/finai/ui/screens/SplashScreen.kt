@@ -10,10 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.finai.core.session.SessionManager
 import kotlinx.coroutines.delay
 
 // Supondo que você tenha um logo na pasta res/drawable
@@ -21,19 +23,25 @@ import kotlinx.coroutines.delay
 import com.example.finai.R
 
 @Composable
-fun SplashScreen(onTimeout: () -> Unit) {
+fun SplashScreen(onTimeout: (Boolean) -> Unit) { // Alterado para retornar true/false se tem sessão
+    val context = LocalContext.current
     var startAnimation by remember { mutableStateOf(false) }
+    val sessionManager = remember { SessionManager(context) }
 
     val backgroundColor by animateColorAsState(
         targetValue = if (startAnimation) Color(0xFF1C1C1C) else Color(0xFFFFC107),
-        animationSpec = tween(durationMillis = 1500)
+        animationSpec = tween(durationMillis = 1500),
+        label = "backgroundColor"
     )
 
     LaunchedEffect(key1 = true) {
         delay(1000L)
         startAnimation = true
         delay(2000L)
-        onTimeout()
+        
+        // Verifica se o usuário está logado e tem sessão válida
+        val isLoggedIn = sessionManager.isLoggedIn()
+        onTimeout(isLoggedIn)
     }
 
     Box(

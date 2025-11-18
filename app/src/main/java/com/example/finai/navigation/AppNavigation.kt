@@ -15,8 +15,9 @@ fun AppNavigation() {
 
     NavHost(navController = navController, startDestination = "splash") {
         composable("splash") {
-            SplashScreen(onTimeout = {
-                navController.navigate("login") {
+            SplashScreen(onTimeout = { isLoggedIn ->
+                val startDestination = if (isLoggedIn) "main" else "login"
+                navController.navigate(startDestination) {
                     // Impede que o usuário volte para a splash screen
                     popUpTo("splash") { inclusive = true }
                 }
