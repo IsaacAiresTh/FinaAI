@@ -32,8 +32,8 @@ fun CBottomNavBar(
 ) {
     Surface(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(70.dp),
+            .fillMaxWidth(),
+//            .height(70.dp),
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         color = Color(0xFFFFC800),
         tonalElevation = 0.dp,
@@ -42,7 +42,7 @@ fun CBottomNavBar(
         NavigationBar(
             containerColor = Color.Transparent,
             tonalElevation = 0.dp,
-            modifier = Modifier.height(70.dp)
+//            modifier = Modifier.height(70.dp)
         ) {
             val items = listOf(
                 BottomNavItem("home", R.drawable.ic_home),
