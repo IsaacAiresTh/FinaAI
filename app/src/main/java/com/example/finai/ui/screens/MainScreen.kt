@@ -25,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.finai.R
+import com.example.finai.features.home.ui.HomeScreen
 import com.example.finai.features.upload.ui.UploadScreen
 import com.example.finai.ui.components.CBottomNavBar
 
