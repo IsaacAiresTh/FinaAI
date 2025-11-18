@@ -21,10 +21,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.finai.R
+import com.example.finai.features.upload.ui.UploadScreen
 import com.example.finai.ui.components.CBottomNavBar
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onLogout: () -> Unit = {}) { // Recebe o callback de logout
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: "home"
@@ -88,7 +89,8 @@ fun MainScreen() {
             composable("profile") {
                 ProfileScreen(
                     modifier = Modifier.padding(innerPadding),
-                    navController = navController // Passando o controlador
+                    navController = navController, // Passando o controlador
+                    onLogout = onLogout // Passa o callback para ProfileScreen
                 )
             }
             composable("upload") { UploadScreen(modifier = Modifier.padding(innerPadding)) }
@@ -115,4 +117,3 @@ fun MainScreen() {
         }
     }
 }
-

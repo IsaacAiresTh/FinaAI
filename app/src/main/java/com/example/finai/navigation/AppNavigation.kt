@@ -49,7 +49,14 @@ fun AppNavigation() {
             )
         }
         composable("main") {
-            MainScreen()
+            MainScreen(
+                onLogout = {
+                    // Navega para a tela de login e limpa o histórico
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

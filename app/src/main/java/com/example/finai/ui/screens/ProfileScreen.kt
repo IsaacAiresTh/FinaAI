@@ -33,7 +33,11 @@ import androidx.navigation.compose.rememberNavController // IMPORTANTE PARA O PR
 import com.example.finai.ui.theme.FinAiTheme
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier, navController: NavHostController) {
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    onLogout: () -> Unit // Novo parâmetro para lidar com o logout
+) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -95,7 +99,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, navController: NavHostControlle
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        navController.navigate("edit_salary_limit") // <-- ATUALIZE AQUI
+                        navController.navigate("edit_salary_limit")
                     },
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF363636))
@@ -134,38 +138,40 @@ fun ProfileScreen(modifier: Modifier = Modifier, navController: NavHostControlle
                     ProfileOptionItem(
                         icon = Icons.Default.Tune,
                         text = "Preferências",
-                        onClick = { navController.navigate("preferences") } // <-- CORRIGIDO
+                        onClick = { navController.navigate("preferences") }
                     )
                     Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                     ProfileOptionItem(
                         icon = Icons.Default.NotificationsNone,
                         text = "Notificações",
-                        onClick = { navController.navigate("notifications") } // <-- CORRIGIDO
+                        onClick = { navController.navigate("notifications") }
                     )
                     Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                     ProfileOptionItem(
                         icon = Icons.Default.Shield,
                         text = "Segurança",
-                        onClick = { navController.navigate("security") } // <-- CORRIGIDO
+                        onClick = { navController.navigate("security") }
                     )
                     Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                     ProfileOptionItem(
                         icon = Icons.Outlined.Accessibility,
                         text = "Acessibilidade",
-                        onClick = { navController.navigate("accessibility") } // <-- CORRIGIDO
+                        onClick = { navController.navigate("accessibility") }
                     )
                     Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                     ProfileOptionItem(
                         icon = Icons.Default.HelpOutline,
                         text = "Contate-nos",
-                        onClick = { navController.navigate("contact_us") } // <-- CORRIGIDO
+                        onClick = { navController.navigate("contact_us") }
                     )
                     Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                     ProfileOptionItem(
                         icon = Icons.Default.Logout,
                         text = "Sair",
                         color = Color(0xFFF44336), // Vermelho para "Sair"
-                        onClick = { /* TODO: Adicionar lógica de Logout e navegar para login */ }
+                        onClick = { 
+                            onLogout() // Chama o callback passado pelo pai
+                        }
                     )
                 }
             }
@@ -208,7 +214,9 @@ private fun ProfileOptionItem(
 @Composable
 private fun ProfileScreenPreview() {
     FinAiTheme {
-        // CORRIGIDO: O Preview precisa de um NavController "falso" para compilar
-        ProfileScreen(navController = rememberNavController())
+        ProfileScreen(
+            navController = rememberNavController(),
+            onLogout = {}
+        )
     }
 }
