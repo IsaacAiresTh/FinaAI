@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp) // Adiciona o plugin KSP
 }
 
 android {
@@ -67,4 +68,9 @@ dependencies {
 
     implementation("cz.adaptech.tesseract4android:tesseract4android:4.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
+
+    // Room Database
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 }
