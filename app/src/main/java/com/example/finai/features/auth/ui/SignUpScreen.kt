@@ -1,5 +1,7 @@
-package com.example.finai.ui.screens
+package com.example.finai.features.auth.ui
 
+import android.app.Application
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -12,15 +14,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -30,11 +35,37 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.finai.ui.components.CButtonAuth
 import com.example.finai.ui.components.COutlinedTextField
 
 @Composable
 fun SignUpScreen(onSignUpClick: () -> Unit, onLoginClick: () -> Unit) {
+    val context = LocalContext.current
+    val application = context.applicationContext as Application
+    val viewModel: AuthViewModel = viewModel(
+        factory = AuthViewModel.Factory(application)
+    )
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Observa o sucesso do registro
+    LaunchedEffect(uiState.isRegistered) {
+        if (uiState.isRegistered) {
+            Toast.makeText(context, "Conta criada com sucesso! Faça login.", Toast.LENGTH_LONG).show()
+            onLoginClick() // Volta para o Login
+            viewModel.resetState()
+        }
+    }
+
+    // Observa erros
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearError()
+        }
+    }
+
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var cpf by remember { mutableStateOf("") }
@@ -142,10 +173,25 @@ fun SignUpScreen(onSignUpClick: () -> Unit, onLoginClick: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    CButtonAuth(
-                        onClick = onSignUpClick,
-                        text = "CRIAR CONTA"
-                    )
+                    // Botão Criar Conta
+                    Box(contentAlignment = Alignment.Center) {
+                        CButtonAuth(
+                            onClick = {
+                                if (password == confirmPassword) {
+                                    viewModel.register(name, email, cpf, phone, password)
+                                } else {
+                                    Toast.makeText(context, "As senhas não coincidem", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            text = if (uiState.isLoading) "" else "CRIAR CONTA"
+                        )
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.Black
+                            )
+                        }
+                    }
                 }
             }
 

@@ -1,5 +1,7 @@
-package com.example.finai.ui.screens
+package com.example.finai.features.auth.ui
 
+import android.app.Application
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -20,12 +23,38 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.finai.R
 import com.example.finai.ui.components.CButtonAuth
 import com.example.finai.ui.components.COutlinedTextField
 
 @Composable
 fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit) {
+    val context = LocalContext.current
+    val application = context.applicationContext as Application
+    val viewModel: AuthViewModel = viewModel(
+        factory = AuthViewModel.Factory(application)
+    )
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Observa o estado de autenticação para navegar
+    LaunchedEffect(uiState.isAuthenticated) {
+        if (uiState.isAuthenticated) {
+            onLoginClick()
+            // Resetar o estado para evitar navegação múltipla se voltar para essa tela
+            viewModel.resetState()
+        }
+    }
+
+    // Observa erros
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearError()
+        }
+    }
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -55,7 +84,6 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "FinAI", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             }
-
 
             // Card de Login
             Card(
@@ -90,10 +118,18 @@ fun LoginScreen(onLoginClick: () -> Unit, onSignUpClick: () -> Unit) {
                     Spacer(modifier = Modifier.height(32.dp))
 
                     // Botão Entrar
-                    CButtonAuth(
-                        onClick = onLoginClick,
-                        text = "ENTRAR"
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        CButtonAuth(
+                            onClick = { viewModel.login(email, password) },
+                            text = if (uiState.isLoading) "" else "ENTRAR"
+                        )
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.Black
+                            )
+                        }
+                    }
                 }
             }
 
