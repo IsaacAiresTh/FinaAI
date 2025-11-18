@@ -4,9 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.finai.ui.screens.LoginScreen
+import com.example.finai.features.auth.ui.LoginScreen
+import com.example.finai.features.auth.ui.SignUpScreen
 import com.example.finai.ui.screens.MainScreen
-import com.example.finai.ui.screens.SignUpScreen
 import com.example.finai.ui.screens.SplashScreen
 
 @Composable

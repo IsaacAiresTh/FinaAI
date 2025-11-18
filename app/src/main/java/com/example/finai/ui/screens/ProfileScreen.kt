@@ -1,5 +1,6 @@
 package com.example.finai.ui.screens
 
+import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,31 +18,41 @@ import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Accessibility
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController // IMPORTANTE PARA O PREVIEW
+import androidx.navigation.compose.rememberNavController
 import com.example.finai.ui.theme.FinAiTheme
+import com.example.finai.ui.viewmodels.ProfileViewModel
 
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    onLogout: () -> Unit // Novo parâmetro para lidar com o logout
+    onLogout: () -> Unit
 ) {
+    val context = LocalContext.current
+    val application = context.applicationContext as Application
+    val viewModel: ProfileViewModel = viewModel(
+        factory = ProfileViewModel.Factory(application)
+    )
+    val uiState by viewModel.uiState.collectAsState()
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF2C2A2A)) // Mesmo fundo das outras telas
+            .background(Color(0xFF2C2A2A))
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -53,7 +64,7 @@ fun ProfileScreen(
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
-                modifier = Modifier.fillMaxWidth() // Alinha o título à esquerda
+                modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(24.dp))
         }
@@ -69,27 +80,33 @@ fun ProfileScreen(
                     .clip(CircleShape)
                     .background(Color.Gray),
                 contentScale = ContentScale.Crop,
-                alpha = 0.5f // Dando um aspecto de placeholder
+                alpha = 0.5f
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Fulano da Silva Jr.",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Text(
-                text = "fulaninho@gmail.com",
-                fontSize = 16.sp,
-                color = Color.LightGray
-            )
-            Text(
-                text = "61 91234-5678",
-                fontSize = 16.sp,
-                color = Color.LightGray
-            )
+            // Dados Dinâmicos do Usuário
+            if (uiState.isLoading) {
+                CircularProgressIndicator(color = Color(0xFFFFC107))
+            } else {
+                val user = uiState.user
+                Text(
+                    text = user?.name ?: "Usuário",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = user?.email ?: "",
+                    fontSize = 16.sp,
+                    color = Color.LightGray
+                )
+                Text(
+                    text = user?.phone ?: "",
+                    fontSize = 16.sp,
+                    color = Color.LightGray
+                )
+            }
             Spacer(modifier = Modifier.height(24.dp))
         }
 
@@ -168,9 +185,10 @@ fun ProfileScreen(
                     ProfileOptionItem(
                         icon = Icons.Default.Logout,
                         text = "Sair",
-                        color = Color(0xFFF44336), // Vermelho para "Sair"
-                        onClick = { 
-                            onLogout() // Chama o callback passado pelo pai
+                        color = Color(0xFFF44336),
+                        onClick = {
+                            viewModel.logout() // Limpa a sessão
+                            onLogout() // Navega para o login
                         }
                     )
                 }
