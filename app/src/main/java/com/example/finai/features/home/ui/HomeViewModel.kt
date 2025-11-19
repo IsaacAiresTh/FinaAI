@@ -9,22 +9,27 @@ import com.example.finai.core.database.database.AppDatabase
 import com.example.finai.core.database.entities.UserEntity
 import com.example.finai.core.session.SessionManager
 import com.example.finai.features.auth.data.AuthRepository
+import com.example.finai.features.expense.data.ExpenseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val isLoading: Boolean = false,
     val user: UserEntity? = null,
-    val userName: String = "Usuário", // Nome de exibição (primeiro nome)
+    val userName: String = "Usuário",
+    val totalSpent: Double = 0.0, // Novo campo para o total gasto
+    val limit: Double = 2000.00, // Limite padrão (pode vir do user no futuro)
     val error: String? = null
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository: AuthRepository
+    private val authRepository: AuthRepository
+    private val expenseRepository: ExpenseRepository
     private val sessionManager: SessionManager
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -32,21 +37,21 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         val database = AppDatabase.getDatabase(application)
-        repository = AuthRepository(database.userDao())
+        authRepository = AuthRepository(database.userDao())
+        expenseRepository = ExpenseRepository(database.expenseDao())
         sessionManager = SessionManager(application.applicationContext)
         
         loadUserData()
+        loadTotalSpent()
     }
 
     private fun loadUserData() {
         val userId = sessionManager.getUserId()
-        if (userId == -1) {
-            return
-        }
+        if (userId == -1) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val result = repository.getUserById(userId)
+            val result = authRepository.getUserById(userId)
             
             if (result.isSuccess) {
                 val user = result.getOrNull()
@@ -61,6 +66,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } else {
                 _uiState.update { it.copy(isLoading = false, error = "Erro ao carregar dados") }
+            }
+        }
+    }
+
+    private fun loadTotalSpent() {
+        val userId = sessionManager.getUserId()
+        if (userId == -1) return
+
+        viewModelScope.launch {
+            // Observa as despesas em tempo real
+            expenseRepository.getExpenses(userId).collectLatest { expenses ->
+                val total = expenses.sumOf { it.amount }
+                _uiState.update { it.copy(totalSpent = total) }
             }
         }
     }

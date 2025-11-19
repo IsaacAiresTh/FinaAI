@@ -1,8 +1,10 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp) // Adiciona o plugin KSP
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -17,6 +19,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+//        // Carregar API Key do local.properties
+//        val properties = Properties()
+//        val localPropertiesFile = project.rootProject.file("local.properties")
+//        if (localPropertiesFile.exists()) {
+//            properties.load(localPropertiesFile.inputStream())
+//        }
+//        val geminiKey = properties.getProperty("GEMINI_API_KEY") ?: ""
+//
+//        // Injeta a chave no BuildConfig gerado
+//        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
     }
 
     buildTypes {
@@ -37,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+//        buildConfig = true // Habilita a geração da classe BuildConfig
     }
 }
 
@@ -49,7 +63,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.google.ai.client)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -67,6 +80,10 @@ dependencies {
     // Coil para carregar imagens
     implementation("io.coil-kt:coil-compose:2.5.0")
 
+    // Google AI (Gemini)
+    implementation(libs.google.ai.client)
+
+    // Tesseract OCR
     implementation("cz.adaptech.tesseract4android:tesseract4android:4.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
 

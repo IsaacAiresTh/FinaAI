@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.finai.ui.components.CDashboardBox
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
@@ -74,8 +76,12 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
+                        
+                        val formattedTotal = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
+                            .format(uiState.totalSpent)
+                            
                         Text(
-                            text = "R$ 1.250,00",
+                            text = formattedTotal,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFFFC800)
@@ -96,8 +102,12 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
+                        
+                        val formattedLimit = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
+                            .format(uiState.limit)
+                            
                         Text(
-                            text = "R$ 2.000,00",
+                            text = formattedLimit,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
