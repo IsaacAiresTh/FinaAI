@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -28,6 +29,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +55,21 @@ fun UploadScreen(modifier: Modifier = Modifier) {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             viewModel.clearError()
         }
+    }
+
+    // Efeito de sucesso
+    LaunchedEffect(uiState.isSaved) {
+        if (uiState.isSaved) {
+            Toast.makeText(context, "Despesa salva com sucesso!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Dialog para entrada manual de valor
+    if (uiState.isManualInputRequired) {
+        ManualValueDialog(
+            onConfirm = { value -> viewModel.onManualValueEntered(value) },
+            onDismiss = { viewModel.onManualInputCancelled() }
+        )
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -166,28 +183,6 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 }
-                // Caso tenha erro no Gemini, mas OCR funcionou, pode mostrar o texto bruto
-                else if (!uiState.extractedText.isNullOrBlank()) {
-                     Spacer(modifier = Modifier.height(16.dp))
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF424242)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Texto Bruto (OCR):",
-                                color = Color(0xFFFFC107),
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = uiState.extractedText ?: "",
-                                color = Color.White,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                }
             }
 
 
@@ -248,8 +243,7 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                 Box(modifier = Modifier.padding(top = 16.dp, bottom = 32.dp)) {
                     CButtonAuth(
                         onClick = {
-                            // TODO: Implementar navegação ou salvar no banco de dados
-                            Toast.makeText(context, "Processando texto...", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Selecione uma imagem primeiro", Toast.LENGTH_SHORT).show()
                         },
                         text = "ENVIAR ARQUIVO"
                         // enabled = !uiState.isLoading && (uiState.imageUri != null || uiState.imageBitmap != null)
@@ -326,6 +320,49 @@ fun UploadScreen(modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+@Composable
+fun ManualValueDialog(
+    onConfirm: (Double) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var textValue by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Valor não detectado") },
+        text = {
+            Column {
+                Text("Não conseguimos identificar o valor total no documento. Por favor, digite o valor manualmente:")
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = textValue,
+                    onValueChange = { textValue = it },
+                    label = { Text("Valor (R$)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val doubleValue = textValue.replace(",", ".").toDoubleOrNull()
+                    if (doubleValue != null && doubleValue > 0) {
+                        onConfirm(doubleValue)
+                    }
+                }
+            ) {
+                Text("Salvar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }
 
 @Composable
