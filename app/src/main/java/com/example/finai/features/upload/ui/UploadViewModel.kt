@@ -10,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.finai.core.ai.GeminiService
 import com.example.finai.core.ocr.OcrService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,13 +22,18 @@ data class UploadUiState(
     val imageBitmap: Bitmap? = null,
     val imageUri: Uri? = null,
     val isLoading: Boolean = false,
-    val extractedText: String? = null,
+    val extractedText: String? = null, // Texto bruto do OCR
+    val analyzedData: String? = null, // JSON retornado pelo Gemini
     val error: String? = null
 )
 
 class UploadViewModel(application: Application) : AndroidViewModel(application) {
 
     private val ocrService = OcrService(application.applicationContext)
+    
+    // TODO: Substitua "YOUR_GEMINI_API_KEY" pela sua chave real do Google AI Studio
+    // O ideal é buscar isso do BuildConfig ou de um arquivo local.properties
+    private val geminiService = GeminiService("AIzaSyCF6A-MB0O1d74dFxJtmocv9FnQ4o-0tDk")
 
     private val _uiState = MutableStateFlow(UploadUiState())
     val uiState: StateFlow<UploadUiState> = _uiState.asStateFlow()
@@ -42,12 +48,12 @@ class UploadViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun onImageSelected(uri: Uri) {
-        _uiState.update { it.copy(imageUri = uri, imageBitmap = null, extractedText = null, error = null) }
+        _uiState.update { it.copy(imageUri = uri, imageBitmap = null, extractedText = null, analyzedData = null, error = null) }
         processImageFromUri(uri)
     }
 
     fun onImageCaptured(bitmap: Bitmap) {
-        _uiState.update { it.copy(imageBitmap = bitmap, imageUri = null, extractedText = null, error = null) }
+        _uiState.update { it.copy(imageBitmap = bitmap, imageUri = null, extractedText = null, analyzedData = null, error = null) }
         processImage(bitmap)
     }
 
@@ -74,15 +80,28 @@ class UploadViewModel(application: Application) : AndroidViewModel(application) 
     private fun processImage(bitmap: Bitmap) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            // Garante que a imagem esteja no formato ARGB_8888, exigido pelo Tesseract
-            val argbBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
             
-            val text = ocrService.extractText(argbBitmap)
+            // 1. Extração de texto com OCR (Tesseract)
+            val argbBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+            val ocrText = ocrService.extractText(argbBitmap)
+            
+            if (ocrText.isBlank()) {
+                _uiState.update { 
+                    it.copy(isLoading = false, error = "Não foi possível extrair texto da imagem.") 
+                }
+                return@launch
+            }
+            
+            _uiState.update { it.copy(extractedText = ocrText) }
+
+            // 2. Análise inteligente com Gemini
+            val analysisResult = geminiService.analyzeFinancialText(ocrText)
+            
             _uiState.update { 
                 it.copy(
                     isLoading = false, 
-                    extractedText = text,
-                    imageBitmap = argbBitmap // Atualiza com o bitmap processado
+                    analyzedData = analysisResult,
+                    imageBitmap = argbBitmap
                 ) 
             }
         }

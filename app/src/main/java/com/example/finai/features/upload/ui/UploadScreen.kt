@@ -1,4 +1,4 @@
-// Em app/src/main/java/com/example/finai/features/upload/ui/UploadScreenDeprecated.kt
+// Em app/src/main/java/com/example/finai/features/upload/ui/UploadScreen.kt
 package com.example.finai.features.upload.ui
 
 import android.Manifest
@@ -143,30 +143,52 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                 }
             }
             
-//             Exibição do Texto Extraído (Para Debug/Confirmação)
-//            item {
-//                if (!uiState.extractedText.isNullOrBlank()) {
-//                    Spacer(modifier = Modifier.height(16.dp))
-//                    Card(
-//                        colors = CardDefaults.cardColors(containerColor = Color(0xFF424242)),
-//                        modifier = Modifier.fillMaxWidth()
-//                    ) {
-//                        Column(modifier = Modifier.padding(16.dp)) {
-//                            Text(
-//                                text = "Texto Extraído:",
-//                                color = Color(0xFFFFC107),
-//                                fontWeight = FontWeight.Bold
-//                            )
-//                            Spacer(modifier = Modifier.height(8.dp))
-//                            Text(
-//                                text = uiState.extractedText ?: "",
-//                                color = Color.White,
-//                                fontSize = 14.sp
-//                            )
-//                        }
-//                    }
-//                }
-//            }
+            // Exibição do Resultado do Gemini (Se disponível)
+            item {
+                if (uiState.analyzedData != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF424242)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "Dados Analisados (IA):",
+                                color = Color(0xFFFFC107),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = uiState.analyzedData ?: "",
+                                color = Color.White,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+                // Caso tenha erro no Gemini, mas OCR funcionou, pode mostrar o texto bruto
+                else if (!uiState.extractedText.isNullOrBlank()) {
+                     Spacer(modifier = Modifier.height(16.dp))
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF424242)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "Texto Bruto (OCR):",
+                                color = Color(0xFFFFC107),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = uiState.extractedText ?: "",
+                                color = Color.White,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+            }
 
 
             // 3. Botões de Ação
