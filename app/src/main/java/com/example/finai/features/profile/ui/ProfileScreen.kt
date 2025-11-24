@@ -1,4 +1,4 @@
-package com.example.finai.ui.screens
+package com.example.finai.features.profile.ui
 
 import android.app.Application
 import androidx.compose.foundation.Image
@@ -34,7 +34,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.finai.ui.theme.FinAiTheme
-import com.example.finai.ui.viewmodels.ProfileViewModel
 
 @Composable
 fun ProfileScreen(

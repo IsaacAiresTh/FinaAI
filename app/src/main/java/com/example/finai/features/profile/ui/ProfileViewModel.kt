@@ -1,4 +1,4 @@
-package com.example.finai.ui.viewmodels
+package com.example.finai.features.profile.ui
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -18,7 +18,8 @@ import kotlinx.coroutines.launch
 data class ProfileUiState(
     val isLoading: Boolean = false,
     val user: UserEntity? = null,
-    val error: String? = null
+    val error: String? = null,
+    val updateSuccess: Boolean = false
 )
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
@@ -56,6 +57,25 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
     
+    fun updateUserFinancials(salary: Double, limit: Double) {
+         val currentUser = _uiState.value.user ?: return
+         val updatedUser = currentUser.copy(salary = salary, spendingLimit = limit)
+         
+         viewModelScope.launch {
+             _uiState.update { it.copy(isLoading = true) }
+             val result = repository.updateUser(updatedUser)
+             if (result.isSuccess) {
+                 _uiState.update { it.copy(isLoading = false, user = updatedUser, updateSuccess = true) }
+             } else {
+                 _uiState.update { it.copy(isLoading = false, error = "Erro ao atualizar dados") }
+             }
+         }
+    }
+    
+    fun resetUpdateSuccess() {
+        _uiState.update { it.copy(updateSuccess = false) }
+    }
+
     fun logout() {
         sessionManager.clearSession()
     }
