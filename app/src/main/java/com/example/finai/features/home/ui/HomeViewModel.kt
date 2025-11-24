@@ -22,7 +22,7 @@ data class HomeUiState(
     val user: UserEntity? = null,
     val userName: String = "Usuário",
     val totalSpent: Double = 0.0, // Novo campo para o total gasto
-    val limit: Double = 2000.00, // Limite padrão (pode vir do user no futuro)
+    val limit: Double = 0.0, // Limite vindo do user
     val error: String? = null
 )
 
@@ -51,21 +51,22 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val result = authRepository.getUserById(userId)
             
-            if (result.isSuccess) {
-                val user = result.getOrNull()
-                val firstName = user?.name?.split(" ")?.firstOrNull() ?: "Usuário"
-                
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false, 
-                        user = user,
-                        userName = firstName
-                    ) 
+            // Observar mudanças no usuário para atualizar o limite em tempo real
+            authRepository.getUserFlow(userId).collectLatest { user ->
+                if (user != null) {
+                    val firstName = user.name.split(" ").firstOrNull() ?: "Usuário"
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false, 
+                            user = user,
+                            userName = firstName,
+                            limit = user.spendingLimit
+                        ) 
+                    }
+                } else {
+                    _uiState.update { it.copy(isLoading = false, error = "Usuário não encontrado") }
                 }
-            } else {
-                _uiState.update { it.copy(isLoading = false, error = "Erro ao carregar dados") }
             }
         }
     }

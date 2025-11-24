@@ -28,6 +28,8 @@ import com.example.finai.R
 import com.example.finai.features.expense.ui.TableScreen
 import com.example.finai.features.expense.ui.TrendingScreen
 import com.example.finai.features.home.ui.HomeScreen
+import com.example.finai.features.profile.ui.EditSalaryLimitScreen
+import com.example.finai.features.profile.ui.ProfileScreen
 import com.example.finai.features.upload.ui.UploadScreen
 import com.example.finai.ui.components.CBottomNavBar
 
