@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 data class UploadUiState(
@@ -126,6 +127,10 @@ class UploadViewModel(application: Application) : AndroidViewModel(application) 
              }
         }
     }
+    
+    fun resetSavedState() {
+        _uiState.update { it.copy(isSaved = false) }
+    }
 
     private fun processImageFromUri(uri: Uri) {
         viewModelScope.launch {
@@ -181,21 +186,24 @@ class UploadViewModel(application: Application) : AndroidViewModel(application) 
 
             val tipo = jsonObject.optString("tipo", "Outro")
             val valor = jsonObject.optDouble("valor", 0.0)
-            val data = jsonObject.optString("data", "")
+            val rawDate = jsonObject.optString("data", "")
             val estabelecimento = jsonObject.optString("estabelecimento", "Desconhecido")
             val descricao = jsonObject.optString("descricao", "Sem descrição")
+
+            // Valida e converte a data
+            val formattedDate = validateAndConvertDate(rawDate)
+            // Converte de volta para exibir na UI no formato brasileiro
+            val displayDate = convertIsoToDisplay(formattedDate)
 
             val formattedAnalysis = """
                 Estabelecimento: $estabelecimento
                 Valor: R$ %.2f
-                Data: $data
+                Data: $displayDate
                 Tipo: $tipo
                 Descrição: $descricao
             """.trimIndent().format(valor)
 
             _uiState.update { it.copy(analyzedData = formattedAnalysis) }
-
-            val formattedDate = convertDateToIso(data)
 
             val expense = ExpenseEntity(
                 userId = userId,
@@ -231,16 +239,35 @@ class UploadViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun convertDateToIso(date: String): String {
-        return try {
+    // Nova função com lógica de validação de ano
+    private fun validateAndConvertDate(dateString: String): String {
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+        val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        
+        try {
+            // Tenta parsear DD/MM/YYYY
             val inputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val parsed = inputFormat.parse(date)
-            outputFormat.format(parsed!!)
+            inputFormat.isLenient = false // Não aceita datas inválidas como 32/01/2024
+            val date = inputFormat.parse(dateString)
+            
+            if (date != null) {
+                val cal = Calendar.getInstance()
+                cal.time = date
+                val year = cal.get(Calendar.YEAR)
+                
+                // Se o ano for diferente do ano atual, usa a data de hoje
+                if (year != currentYear) {
+                    return outputFormat.format(java.util.Date())
+                }
+                
+                return outputFormat.format(date)
+            }
         } catch (e: Exception) {
-            val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            outputFormat.format(java.util.Date())
+            // Se falhar o parse, ignora e cai no fallback abaixo
         }
+        
+        // Fallback para a data de hoje
+        return outputFormat.format(java.util.Date())
     }
     
     private fun convertIsoToDisplay(dateIso: String): String {

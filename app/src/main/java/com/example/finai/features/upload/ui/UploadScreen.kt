@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.finai.ui.components.CButtonAuth
+import kotlinx.coroutines.delay
 
 @Composable
 fun UploadScreen(modifier: Modifier = Modifier) {
@@ -56,6 +57,9 @@ fun UploadScreen(modifier: Modifier = Modifier) {
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             Toast.makeText(context, "Despesa salva com sucesso!", Toast.LENGTH_SHORT).show()
+            // Aguarda um pouco e reseta o estado de salvo para não exibir o toast novamente
+            delay(2000)
+            viewModel.resetSavedState()
         }
     }
 
