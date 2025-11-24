@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -147,20 +148,32 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             }
         }
 
-        // 3. Box de Arquivos Recentes
+        // 3. Box de Arquivos Recentes (Agora dinâmico)
         item {
             CDashboardBox(title = "Arquivos Recentes") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    RecentFileItem(description = "Conta de Luz - Maio/2024")
-                    RecentFileItem(description = "Nota Fiscal - Supermercado")
-                    RecentFileItem(description = "Fatura Cartão - Final 9876")
+                    if (uiState.recentExpenses.isEmpty()) {
+                         Text(
+                            text = "Nenhum registro recente.",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    } else {
+                        uiState.recentExpenses.forEach { expense ->
+                            val formattedAmount = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
+                                .format(expense.amount)
+                            val title = expense.establishment.ifBlank { expense.description }
+                            val description = "$title - $formattedAmount"
+                            
+                            RecentFileItem(description = description)
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-//Funcao temporaria
 @Composable
 fun RecentFileItem(description: String) {
     Row(

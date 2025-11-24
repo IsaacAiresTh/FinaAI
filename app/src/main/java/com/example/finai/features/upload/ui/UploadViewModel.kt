@@ -20,6 +20,7 @@ import com.example.finai.features.expense.data.ExpenseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -36,7 +37,8 @@ data class UploadUiState(
     val error: String? = null,
     val isSaved: Boolean = false,
     val isManualInputRequired: Boolean = false,
-    val pendingExpense: ExpenseEntity? = null
+    val pendingExpense: ExpenseEntity? = null,
+    val recentExpenses: List<ExpenseEntity> = emptyList() // Nova lista de despesas recentes
 )
 
 class UploadViewModel(application: Application) : AndroidViewModel(application) {
@@ -61,6 +63,22 @@ class UploadViewModel(application: Application) : AndroidViewModel(application) 
             _uiState.update { it.copy(isLoading = true) }
             ocrService.prepare()
             _uiState.update { it.copy(isLoading = false) }
+        }
+        
+        loadRecentExpenses()
+    }
+
+    private fun loadRecentExpenses() {
+        val userId = sessionManager.getUserId()
+        if (userId == -1) return
+
+        viewModelScope.launch {
+            // Observa a lista de despesas e pega as 5 mais recentes
+            expenseRepository.getExpenses(userId).collectLatest { expenses ->
+                _uiState.update { 
+                    it.copy(recentExpenses = expenses.take(5)) 
+                }
+            }
         }
     }
 

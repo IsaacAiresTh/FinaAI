@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.finai.core.database.database.AppDatabase
+import com.example.finai.core.database.entities.ExpenseEntity
 import com.example.finai.core.database.entities.UserEntity
 import com.example.finai.core.session.SessionManager
 import com.example.finai.features.auth.data.AuthRepository
@@ -21,8 +22,9 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val user: UserEntity? = null,
     val userName: String = "Usuário",
-    val totalSpent: Double = 0.0, // Novo campo para o total gasto
-    val limit: Double = 0.0, // Limite vindo do user
+    val totalSpent: Double = 0.0,
+    val limit: Double = 0.0,
+    val recentExpenses: List<ExpenseEntity> = emptyList(), // Nova lista para arquivos recentes
     val error: String? = null
 )
 
@@ -42,7 +44,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         sessionManager = SessionManager(application.applicationContext)
         
         loadUserData()
-        loadTotalSpent()
+        loadFinancialData() // Carrega gastos e lista recente juntos
     }
 
     private fun loadUserData() {
@@ -52,7 +54,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             
-            // Observar mudanças no usuário para atualizar o limite em tempo real
             authRepository.getUserFlow(userId).collectLatest { user ->
                 if (user != null) {
                     val firstName = user.name.split(" ").firstOrNull() ?: "Usuário"
@@ -71,7 +72,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun loadTotalSpent() {
+    private fun loadFinancialData() {
         val userId = sessionManager.getUserId()
         if (userId == -1) return
 
@@ -79,7 +80,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             // Observa as despesas em tempo real
             expenseRepository.getExpenses(userId).collectLatest { expenses ->
                 val total = expenses.sumOf { it.amount }
-                _uiState.update { it.copy(totalSpent = total) }
+                // Pega apenas os 3 primeiros para a lista "Recentes"
+                val recent = expenses.take(3)
+                
+                _uiState.update { 
+                    it.copy(
+                        totalSpent = total,
+                        recentExpenses = recent
+                    ) 
+                }
             }
         }
     }

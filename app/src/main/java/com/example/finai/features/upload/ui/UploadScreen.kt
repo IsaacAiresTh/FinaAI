@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -33,7 +34,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.finai.ui.components.CButtonAuth
+import com.example.finai.ui.components.COutlinedTextField
 import kotlinx.coroutines.delay
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun UploadScreen(modifier: Modifier = Modifier) {
@@ -262,10 +266,10 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                 }
             }
 
-            // 5. Título "Arquivos Enviados"
+            // 5. Título "Arquivos Enviados Recentemente"
             item {
                 Text(
-                    text = "Arquivos Enviados",
+                    text = "Arquivos Enviados (Recentes)",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -274,18 +278,22 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 6. Lista de Arquivos Enviados (Placeholder)
-            item {
-                UploadedFileItem(
-                    title = "Lista de Compras",
-                    description = "Supermercado Big Bom - R$ 450,00"
-                )
-            }
-            item {
-                UploadedFileItem(
-                    title = "Boleto Internet",
-                    description = "Claro Net - R$ 120,00"
-                )
+            // 6. Lista de Arquivos Enviados (Do Banco de Dados)
+            if (uiState.recentExpenses.isEmpty()) {
+                item {
+                    Text("Nenhum envio recente.", color = Color.Gray, fontSize = 14.sp)
+                }
+            } else {
+                items(uiState.recentExpenses) { expense ->
+                    val formattedAmount = NumberFormat.getCurrencyInstance(Locale("pt", "BR")).format(expense.amount)
+                    val title = expense.establishment.ifBlank { expense.description }
+                    val description = "$title - $formattedAmount"
+                    
+                    UploadedFileItem(
+                        title = expense.type,
+                        description = description
+                    )
+                }
             }
 
             // 7. Card de Arquivos Locais (Placeholder)
@@ -361,15 +369,19 @@ fun ManualValueDialog(onConfirm: (Double) -> Unit, onDismiss: () -> Unit) {
     
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Valor não identificado") },
+        containerColor = Color(0xFF363636), // Cor de fundo do diálogo
+        titleContentColor = Color.White, // Cor do título
+        textContentColor = Color.White, // Cor do texto
+        title = { Text("Valor não identificado", fontWeight = FontWeight.Bold) },
         text = {
             Column {
                 Text("A IA identificou o documento, mas não conseguiu ler o valor. Por favor, insira manualmente:")
                 Spacer(modifier = Modifier.height(16.dp))
-                OutlinedTextField(
+                // Campo de texto personalizado com estilo do app
+                COutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    label = { Text("Valor (R$)") },
+                    label = "Valor (R$)",
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true
                 )
@@ -382,13 +394,20 @@ fun ManualValueDialog(onConfirm: (Double) -> Unit, onDismiss: () -> Unit) {
                     if (value != null && value > 0) {
                         onConfirm(value)
                     }
-                }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFFC107), // Amarelo padrão
+                    contentColor = Color.Black
+                )
             ) {
-                Text("Confirmar")
+                Text("Confirmar", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFFFC107))
+            ) {
                 Text("Cancelar")
             }
         }
