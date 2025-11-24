@@ -7,10 +7,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Fastfood
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Fastfood
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -18,7 +17,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,81 +39,83 @@ fun TableScreen(modifier: Modifier = Modifier) {
     )
     val uiState by viewModel.uiState.collectAsState()
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFF2C2A2A))
-            .padding(horizontal = 16.dp)
-    ) {
-        // Título da Tela
-        item {
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(
-                text = "Relatório de Gastos",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF2C2A2A))
+                .padding(horizontal = 16.dp)
+        ) {
+            // Título da Tela
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = "Relatório de Gastos",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
-        // Box de Resumo
-        item {
-            CDashboardBox(title = "Resumo Total") {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Total Gasto:",
-                        fontSize = 20.sp,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                    val formattedTotal = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
-                        .format(uiState.totalAmount)
-                    
-                    Text(
-                        text = formattedTotal,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFC800)
-                    )
+            // Box de Resumo
+            item {
+                CDashboardBox(title = "Resumo Total") {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Total Gasto:",
+                            fontSize = 20.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                        val formattedTotal = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
+                            .format(uiState.totalAmount)
+                        
+                        Text(
+                            text = formattedTotal,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFFC800)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            // Cabeçalho da Lista de Despesas
+            item {
+                Text(
+                    text = "Todas as Despesas",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            // Lista de Despesas
+            if (uiState.expenses.isEmpty() && !uiState.isLoading) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                        Text("Nenhuma despesa registrada.", color = Color.Gray)
+                    }
+                }
+            } else {
+                items(uiState.expenses) { expense ->
+                    ExpenseItem(expense = expense)
+                    Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        // Cabeçalho da Lista de Despesas
-        item {
-            Text(
-                text = "Todas as Despesas",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-
-        // Lista de Despesas
-        if (uiState.expenses.isEmpty() && !uiState.isLoading) {
-            item {
-                Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                    Text("Nenhuma despesa registrada.", color = Color.Gray)
-                }
-            }
-        } else {
-            items(uiState.expenses) { expense ->
-                ExpenseItem(expense = expense)
-                Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
-            }
-        }
-        
-        if (uiState.isLoading) {
-            item {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+            
+            if (uiState.isLoading) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
                 }
             }
         }
@@ -128,7 +128,7 @@ private fun ExpenseItem(expense: ExpenseEntity) {
         "Boleto" -> Icons.Default.Description
         "Nota Fiscal" -> Icons.Default.ShoppingCart
         "Recibo" -> Icons.Default.Description
-        "Alimentação" -> Icons.Default.Fastfood // Exemplo, se o Gemini retornar categorias específicas
+        "Alimentação" -> Icons.Default.Fastfood
         else -> Icons.Default.ShoppingCart
     }
 

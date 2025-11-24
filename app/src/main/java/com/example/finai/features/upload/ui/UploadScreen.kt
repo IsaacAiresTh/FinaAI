@@ -173,7 +173,7 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                text = "Dados Analisados (IA):",
+                                text = "Dados Analisados:",
                                 color = Color(0xFFFFC107),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
@@ -375,7 +375,7 @@ fun ManualValueDialog(onConfirm: (Double) -> Unit, onDismiss: () -> Unit) {
         title = { Text("Valor não identificado", fontWeight = FontWeight.Bold) },
         text = {
             Column {
-                Text("A IA identificou o documento, mas não conseguiu ler o valor. Por favor, insira manualmente:")
+                Text("Identificamos o documento, mas não conseguimos ler o valor. Por favor, insira manualmente:")
                 Spacer(modifier = Modifier.height(16.dp))
                 // Campo de texto personalizado com estilo do app
                 COutlinedTextField(
