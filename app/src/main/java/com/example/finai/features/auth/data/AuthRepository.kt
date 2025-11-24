@@ -3,6 +3,7 @@ package com.example.finai.features.auth.data
 import com.example.finai.core.database.dao.UserDao
 import com.example.finai.core.database.entities.UserEntity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 class AuthRepository(private val userDao: UserDao) {
@@ -43,5 +44,18 @@ class AuthRepository(private val userDao: UserDao) {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    suspend fun updateUser(user: UserEntity): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            userDao.updateUser(user)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    fun getUserFlow(id: Int): Flow<UserEntity?> {
+        return userDao.getUserFlow(id)
     }
 }

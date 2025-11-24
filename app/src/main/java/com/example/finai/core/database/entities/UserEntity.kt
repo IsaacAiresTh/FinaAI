@@ -10,5 +10,7 @@ data class UserEntity(
     val email: String,
     val password: String, // Nota: Em produção, nunca salve senhas em texto puro. Use hash (SHA-256/BCrypt).
     val cpf: String,
-    val phone: String
+    val phone: String,
+    val salary: Double = 0.0,
+    val spendingLimit: Double = 0.0
 )
