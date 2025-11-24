@@ -1,4 +1,3 @@
-// Em app/src/main/java/com/example/finai/features/upload/ui/UploadScreen.kt
 package com.example.finai.features.upload.ui
 
 import android.Manifest
@@ -8,7 +7,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,7 +25,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,9 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.finai.R
 import com.example.finai.ui.components.CButtonAuth
-import com.example.finai.ui.theme.FinAiTheme
 
 @Composable
 fun UploadScreen(modifier: Modifier = Modifier) {
@@ -131,7 +126,7 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                 ) {
                     if (uiState.imageUri == null && uiState.imageBitmap == null) {
                         Text(
-                            text = "Sua imagem aparecerá aqui",
+                            text = "Selecione uma imagem ou tire foto",
                             color = Color.Gray,
                             fontSize = 16.sp
                         )
@@ -160,7 +155,7 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                 }
             }
             
-            // Exibição do Resultado do Gemini (Se disponível)
+            // Exibição do Resultado do Gemini (Texto Formatado)
             item {
                 if (uiState.analyzedData != null) {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -172,21 +167,22 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                             Text(
                                 text = "Dados Analisados (IA):",
                                 color = Color(0xFFFFC107),
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
                             Text(
                                 text = uiState.analyzedData ?: "",
                                 color = Color.White,
-                                fontSize = 14.sp
+                                fontSize = 16.sp,
+                                lineHeight = 24.sp // Melhora a legibilidade do texto multilinha
                             )
                         }
                     }
                 }
             }
 
-
-            // 3. Botões de Ação
+            // 3. Botões de Ação (Câmera e Galeria)
             item {
                 Spacer(modifier = Modifier.height(32.dp))
                 Row(
@@ -238,15 +234,26 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                 }
             }
 
-            // 4. Botão Enviar
+            // 4. Botão Confirmar e Salvar
             item {
                 Box(modifier = Modifier.padding(top = 16.dp, bottom = 32.dp)) {
+                    // Define o texto e a cor do botão com base no estado
+                    val buttonText = when {
+                        uiState.isLoading -> "ANALISANDO..."
+                        uiState.pendingExpense != null -> "CONFIRMAR E SALVAR"
+                        uiState.isSaved -> "SALVO COM SUCESSO"
+                        else -> "AGUARDANDO IMAGEM"
+                    }
+
                     CButtonAuth(
                         onClick = {
-                            Toast.makeText(context, "Selecione uma imagem primeiro", Toast.LENGTH_SHORT).show()
+                            if (uiState.pendingExpense != null) {
+                                viewModel.confirmExpense()
+                            } else if (uiState.imageUri == null && uiState.imageBitmap == null) {
+                                Toast.makeText(context, "Utilize os botões acima para selecionar uma imagem", Toast.LENGTH_SHORT).show()
+                            }
                         },
-                        text = "ENVIAR ARQUIVO"
-                        // enabled = !uiState.isLoading && (uiState.imageUri != null || uiState.imageBitmap != null)
+                        text = buttonText
                     )
                 }
             }
@@ -263,21 +270,21 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 6. Lista de Arquivos Enviados
+            // 6. Lista de Arquivos Enviados (Placeholder)
             item {
                 UploadedFileItem(
                     title = "Lista de Compras",
-                    description = "Praesent quis nisl elit. Vivamus mi velit, feugiat sit amet imperdiet sed, tincidunt ac velit. Aenean nec ante in purus euismod..."
+                    description = "Supermercado Big Bom - R$ 450,00"
                 )
             }
             item {
                 UploadedFileItem(
-                    title = "Boleto",
-                    description = "Praesent quis nisl elit. Vivamus mi velit, feugiat sit amet imperdiet sed, tincidunt ac velit. Aenean nec ante in purus euismod..."
+                    title = "Boleto Internet",
+                    description = "Claro Net - R$ 120,00"
                 )
             }
 
-            // 7. Card de Arquivos Locais
+            // 7. Card de Arquivos Locais (Placeholder)
             item {
                 Spacer(modifier = Modifier.height(32.dp))
                 Card(
@@ -299,8 +306,8 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(4),
                             modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 300.dp),
+                                .fillMaxWidth()
+                                .heightIn(max = 300.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
@@ -317,28 +324,47 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(80.dp)) // Espaço extra para não cobrir com a Nav Bar
             }
         }
     }
 }
 
 @Composable
-fun ManualValueDialog(
-    onConfirm: (Double) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var textValue by remember { mutableStateOf("") }
+fun UploadedFileItem(title: String, description: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(Color(0xFF363636), RoundedCornerShape(8.dp))
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(text = title, color = Color.White, fontWeight = FontWeight.Bold)
+            Text(text = description, color = Color.Gray, fontSize = 12.sp, maxLines = 1)
+        }
+    }
+}
 
+@Composable
+fun ManualValueDialog(onConfirm: (Double) -> Unit, onDismiss: () -> Unit) {
+    var text by remember { mutableStateOf("") }
+    
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Valor não detectado") },
+        title = { Text("Valor não identificado") },
         text = {
             Column {
-                Text("Não conseguimos identificar o valor total no documento. Por favor, digite o valor manualmente:")
+                Text("A IA identificou o documento, mas não conseguiu ler o valor. Por favor, insira manualmente:")
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
-                    value = textValue,
-                    onValueChange = { textValue = it },
+                    value = text,
+                    onValueChange = { text = it },
                     label = { Text("Valor (R$)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true
@@ -346,15 +372,15 @@ fun ManualValueDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = {
-                    val doubleValue = textValue.replace(",", ".").toDoubleOrNull()
-                    if (doubleValue != null && doubleValue > 0) {
-                        onConfirm(doubleValue)
+                    val value = text.toDoubleOrNull()
+                    if (value != null && value > 0) {
+                        onConfirm(value)
                     }
                 }
             ) {
-                Text("Salvar")
+                Text("Confirmar")
             }
         },
         dismissButton = {
@@ -365,53 +391,8 @@ fun ManualValueDialog(
     )
 }
 
-@Composable
-private fun UploadedFileItem(title: String, description: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Box(
-            modifier = Modifier
-                .size(width = 80.dp, height = 100.dp)
-                .background(Color.Gray.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                .padding(4.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_table),
-                contentDescription = title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = description,
-                fontSize = 14.sp,
-                color = Color.LightGray,
-                lineHeight = 20.sp,
-                maxLines = 3
-            )
-        }
-    }
-}
-
 @Preview
 @Composable
 private fun UploadScreenPreview() {
-    FinAiTheme {
-        UploadScreen()
-    }
+    UploadScreen()
 }

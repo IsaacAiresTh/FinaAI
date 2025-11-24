@@ -34,8 +34,8 @@ data class UploadUiState(
     val analyzedData: String? = null,
     val error: String? = null,
     val isSaved: Boolean = false,
-    val isManualInputRequired: Boolean = false, // Novo estado para indicar se precisa de input manual
-    val pendingExpense: ExpenseEntity? = null // Armazena a despesa temporariamente enquanto aguarda o valor
+    val isManualInputRequired: Boolean = false,
+    val pendingExpense: ExpenseEntity? = null
 )
 
 class UploadViewModel(application: Application) : AndroidViewModel(application) {
@@ -77,20 +77,54 @@ class UploadViewModel(application: Application) : AndroidViewModel(application) 
         val pending = uiState.value.pendingExpense
         if (pending != null) {
             val updatedExpense = pending.copy(amount = value)
-            // Salva a despesa com o valor corrigido
-            viewModelScope.launch {
-                 try {
-                     expenseRepository.saveExpense(updatedExpense)
-                     _uiState.update { it.copy(isLoading = false, isSaved = true, isManualInputRequired = false, pendingExpense = null) }
-                 } catch (e: Exception) {
-                     _uiState.update { it.copy(error = "Erro ao salvar despesa: ${e.message}") }
-                 }
+            
+            // Atualiza a string de exibição com o novo valor
+            val newAnalysis = """
+                Estabelecimento: ${updatedExpense.establishment}
+                Valor: R$ %.2f
+                Data: ${convertIsoToDisplay(updatedExpense.date)}
+                Tipo: ${updatedExpense.type}
+                Descrição: ${updatedExpense.description}
+            """.trimIndent().format(updatedExpense.amount)
+
+            // Atualiza o estado com a despesa pendente (pronta para confirmar)
+            _uiState.update { 
+                it.copy(
+                    isManualInputRequired = false, 
+                    pendingExpense = updatedExpense,
+                    analyzedData = newAnalysis
+                ) 
             }
         }
     }
 
     fun onManualInputCancelled() {
-        _uiState.update { it.copy(isManualInputRequired = false, pendingExpense = null) }
+        _uiState.update { it.copy(isManualInputRequired = false, pendingExpense = null, analyzedData = null) }
+    }
+
+    // Nova função para persistir os dados apenas quando o usuário confirmar
+    fun confirmExpense() {
+        val expense = uiState.value.pendingExpense ?: return
+        
+        viewModelScope.launch {
+             try {
+                 expenseRepository.saveExpense(expense)
+                 // Limpa o estado após salvar com sucesso
+                 _uiState.update { 
+                     it.copy(
+                         isLoading = false, 
+                         isSaved = true, 
+                         pendingExpense = null, 
+                         analyzedData = null,
+                         extractedText = null,
+                         imageUri = null,
+                         imageBitmap = null
+                     ) 
+                 }
+             } catch (e: Exception) {
+                 _uiState.update { it.copy(error = "Erro ao salvar despesa: ${e.message}") }
+             }
+        }
     }
 
     private fun processImageFromUri(uri: Uri) {
@@ -128,9 +162,8 @@ class UploadViewModel(application: Application) : AndroidViewModel(application) 
 
             // 2. Gemini
             val analysisResult = geminiService.analyzeFinancialText(ocrText)
-            _uiState.update { it.copy(analyzedData = analysisResult) }
-
-            // 3. Parse e Salvar no SQLite
+            
+            // 3. Parse e Preparação (sem salvar ainda)
             processAnalysisResult(analysisResult)
         }
     }
@@ -143,27 +176,37 @@ class UploadViewModel(application: Application) : AndroidViewModel(application) 
         }
 
         try {
-            // Limpeza básica caso o Gemini retorne Markdown code blocks
             val cleanJson = jsonString.replace("```json", "").replace("```", "").trim()
             val jsonObject = JSONObject(cleanJson)
 
-            // Tratamento de data: DD/MM/AAAA -> YYYY-MM-DD
-            val rawDate = jsonObject.optString("data", "")
-            val formattedDate = convertDateToIso(rawDate)
-            
-            val amount = jsonObject.optDouble("valor", 0.0)
+            val tipo = jsonObject.optString("tipo", "Outro")
+            val valor = jsonObject.optDouble("valor", 0.0)
+            val data = jsonObject.optString("data", "")
+            val estabelecimento = jsonObject.optString("estabelecimento", "Desconhecido")
+            val descricao = jsonObject.optString("descricao", "Sem descrição")
+
+            val formattedAnalysis = """
+                Estabelecimento: $estabelecimento
+                Valor: R$ %.2f
+                Data: $data
+                Tipo: $tipo
+                Descrição: $descricao
+            """.trimIndent().format(valor)
+
+            _uiState.update { it.copy(analyzedData = formattedAnalysis) }
+
+            val formattedDate = convertDateToIso(data)
 
             val expense = ExpenseEntity(
                 userId = userId,
-                type = jsonObject.optString("tipo", "Outro"),
-                amount = amount,
-                date = formattedDate, // Salva YYYY-MM-DD
-                establishment = jsonObject.optString("estabelecimento", "Desconhecido"),
-                description = jsonObject.optString("descricao", "Sem descrição")
+                type = tipo,
+                amount = valor,
+                date = formattedDate,
+                establishment = estabelecimento,
+                description = descricao
             )
 
-            // Verifica se o valor é 0.0 ou inválido
-            if (amount <= 0.0) {
+            if (valor <= 0.0) {
                  _uiState.update { 
                      it.copy(
                          isLoading = false, 
@@ -172,8 +215,14 @@ class UploadViewModel(application: Application) : AndroidViewModel(application) 
                      ) 
                  }
             } else {
-                expenseRepository.saveExpense(expense)
-                _uiState.update { it.copy(isLoading = false, isSaved = true) }
+                // Não salva automaticamente. Apenas define como pendente de confirmação.
+                _uiState.update { 
+                    it.copy(
+                        isLoading = false, 
+                        isManualInputRequired = false, 
+                        pendingExpense = expense 
+                    ) 
+                }
             }
 
         } catch (e: Exception) {
@@ -189,9 +238,19 @@ class UploadViewModel(application: Application) : AndroidViewModel(application) 
             val parsed = inputFormat.parse(date)
             outputFormat.format(parsed!!)
         } catch (e: Exception) {
-            // Se falhar ou for vazia, usa a data de hoje
             val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             outputFormat.format(java.util.Date())
+        }
+    }
+    
+    private fun convertIsoToDisplay(dateIso: String): String {
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val parsed = inputFormat.parse(dateIso)
+            outputFormat.format(parsed!!)
+        } catch (e: Exception) {
+            dateIso
         }
     }
     
