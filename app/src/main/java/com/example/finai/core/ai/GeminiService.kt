@@ -7,8 +7,6 @@ import kotlinx.coroutines.withContext
 
 class GeminiService(private val apiKey: String) {
 
-    // Alterado para "gemini-pro" que é o modelo estável padrão e geralmente funciona em todas as contas
-    // Outras opções para tentar futuramente: "gemini-1.5-flash" (sem sufixo) ou "gemini-1.0-pro"
     private val generativeModel = GenerativeModel(
         modelName = "gemini-2.5-flash",
         apiKey = apiKey
@@ -22,7 +20,7 @@ class GeminiService(private val apiKey: String) {
             
             1. "tipo": Tipo do documento (ex: "Boleto", "Nota Fiscal", "Recibo", "Cupom Fiscal", "Transferência", "Outro").
             2. "valor pago": O valor total monetário encontrado (formato numérico float, ex: 150.00).
-            3. "data": A data principal do documento (vencimento ou emissão) no formato DD/MM/AAAA.
+            3. "data": A data principal do documento (vencimento ou emissão) no formato DD/MM/AAAA, caso nao seja encontrado retorne a data atual.
             4. "estabelecimento": Nome da empresa, loja ou pessoa beneficiária.
             5. "descricao": Uma breve descrição de 5 a 10 palavras sobre o que é esse gasto.
             

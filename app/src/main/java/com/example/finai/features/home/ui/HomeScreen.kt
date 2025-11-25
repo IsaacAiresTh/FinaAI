@@ -12,9 +12,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Fastfood
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -162,10 +167,10 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                         uiState.recentExpenses.forEach { expense ->
                             val formattedAmount = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
                                 .format(expense.amount)
-                            val title = expense.establishment.ifBlank { expense.description }
-                            val description = "$title - $formattedAmount"
+                            val establishment = expense.establishment.ifBlank { expense.description }
+                            val description = "$establishment - $formattedAmount"
                             
-                            RecentFileItem(description = description)
+                            RecentFileItem(type = expense.type, description = description)
                         }
                     }
                 }
@@ -175,19 +180,35 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun RecentFileItem(description: String) {
+fun RecentFileItem(type: String, description: String) {
+    val icon = when(type) {
+        "Boleto" -> Icons.Default.Description
+        "Nota Fiscal" -> Icons.Default.ShoppingCart
+        "Recibo" -> Icons.Default.Description
+        "Alimentação" -> Icons.Default.Fastfood
+        else -> Icons.Default.ShoppingCart
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
     ) {
-        // Placeholder para a imagem do arquivo
-        Box(
+        Icon(
+            imageVector = icon,
+            contentDescription = type,
+            tint = Color(0xFFFFC107),
             modifier = Modifier
                 .size(40.dp)
-                .background(Color.DarkGray, shape = MaterialTheme.shapes.small)
+                .background(Color(0xFF363636), shape = CircleShape)
+                .padding(8.dp)
         )
-        Spacer(modifier = Modifier.size(12.dp))
-        Text(description, color = Color.White, modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(text = type, color = Color.White, fontWeight = FontWeight.Bold)
+            Text(text = description, color = Color.Gray, fontSize = 12.sp, maxLines = 1)
+        }
     }
 }
 
