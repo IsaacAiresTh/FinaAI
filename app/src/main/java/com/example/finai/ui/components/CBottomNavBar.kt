@@ -5,16 +5,16 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,54 +28,55 @@ import com.example.finai.R
 @Composable
 fun CBottomNavBar(
     selectedItem: String,
-    onItemSelected: (String) -> Unit
+    onItemSelected: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    // Container que define a barra de navegação
     Surface(
-        modifier = Modifier
-            .fillMaxWidth(),
-//            .height(70.dp),
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+        modifier = modifier.fillMaxWidth(),
+//        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         color = Color(0xFFFFC800),
-        tonalElevation = 0.dp,
         shadowElevation = 8.dp
     ) {
-        NavigationBar(
-            containerColor = Color.Transparent,
-            tonalElevation = 0.dp,
-//            modifier = Modifier.height(70.dp)
-        ) {
-            val items = listOf(
-                BottomNavItem("home", R.drawable.ic_home),
-                BottomNavItem("trending", R.drawable.ic_trending),
-                BottomNavItem("DUMMY", 0), // Espaço para o FAB
-                BottomNavItem("table", R.drawable.ic_table),
-                BottomNavItem("profile", R.drawable.ic_profile)
-            )
+        // Column para organizar a Row de ícones e o padding do sistema
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val items = listOf(
+                    BottomNavItem("home", R.drawable.ic_home),
+                    BottomNavItem("trending", R.drawable.ic_trending),
+                    BottomNavItem("DUMMY", 0),
+                    BottomNavItem("table", R.drawable.ic_table),
+                    BottomNavItem("profile", R.drawable.ic_profile)
+                )
 
-            items.forEach { item ->
-                if (item.route == "DUMMY") {
-                    // Item invisível para dar espaço ao FAB
-                    NavigationBarItem(
-                        selected = false,
-                        onClick = { },
-                        icon = { },
-                        enabled = false
-                    )
-                } else {
-                    val isSelected = selectedItem == item.route
+                items.forEach { item ->
+                    if (item.route == "DUMMY") {
+                        Spacer(modifier = Modifier.weight(1f))
+                    } else {
+                        val isSelected = selectedItem == item.route
+                        
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) { onItemSelected(item.route) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            val scale by animateFloatAsState(
+                                targetValue = if (isSelected) 1.1f else 1f,
+                                animationSpec = tween(300),
+                                label = "scale"
+                            )
 
-                    // Animação de escala quando selecionado
-                    val scale by animateFloatAsState(
-                        targetValue = if (isSelected) 1.1f else 1f,
-                        animationSpec = tween(300),
-                        label = "scale"
-                    )
-
-                    NavigationBarItem(
-                        selected = isSelected,
-                        onClick = { onItemSelected(item.route) },
-                        alwaysShowLabel = false,
-                        icon = {
                             val backgroundColor by animateColorAsState(
                                 targetValue = if (isSelected) Color.White else Color.Transparent,
                                 animationSpec = tween(300),
@@ -97,13 +98,8 @@ fun CBottomNavBar(
                                     tint = if (isSelected) Color.Black else Color.Black.copy(alpha = 0.6f)
                                 )
                             }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color.Black,
-                            unselectedIconColor = Color.Black.copy(alpha = 0.6f),
-                            indicatorColor = Color.Transparent
-                        )
-                    )
+                        }
+                    }
                 }
             }
         }
