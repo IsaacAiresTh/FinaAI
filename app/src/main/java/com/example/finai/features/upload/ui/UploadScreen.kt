@@ -13,11 +13,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -296,64 +300,76 @@ fun UploadScreen(modifier: Modifier = Modifier) {
                 }
             }
 
-            // 7. Card de Arquivos Locais (Placeholder)
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .defaultMinSize(minHeight = 200.dp),
-                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF363636))
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Arquivos Locais",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(4),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(max = 300.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(8) {
-                                Box(
-                                    modifier = Modifier
-                                        .aspectRatio(1f)
-                                        .background(
-                                            Color.Gray.copy(alpha = 0.3f),
-                                            RoundedCornerShape(8.dp)
-                                        )
-                                )
-                            }
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(80.dp)) // Espaço extra para não cobrir com a Nav Bar
-            }
+//            // 7. Card de Arquivos Locais (Placeholder)
+//            item {
+//                Spacer(modifier = Modifier.height(32.dp))
+//                Card(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .defaultMinSize(minHeight = 200.dp),
+//                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+//                    colors = CardDefaults.cardColors(containerColor = Color(0xFF363636))
+//                ) {
+//                    Column(modifier = Modifier.padding(16.dp)) {
+//                        Text(
+//                            text = "Arquivos Locais",
+//                            fontSize = 20.sp,
+//                            fontWeight = FontWeight.Bold,
+//                            color = Color.White
+//                        )
+//                        Spacer(modifier = Modifier.height(16.dp))
+//
+//                        LazyVerticalGrid(
+//                            columns = GridCells.Fixed(4),
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .heightIn(max = 300.dp),
+//                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//                            verticalArrangement = Arrangement.spacedBy(8.dp)
+//                        ) {
+//                            items(8) {
+//                                Box(
+//                                    modifier = Modifier
+//                                        .aspectRatio(1f)
+//                                        .background(
+//                                            Color.Gray.copy(alpha = 0.3f),
+//                                            RoundedCornerShape(8.dp)
+//                                        )
+//                                )
+//                            }
+//                        }
+//                    }
+//                }
+//                Spacer(modifier = Modifier.height(80.dp)) // Espaço extra para não cobrir com a Nav Bar
+//            }
         }
     }
 }
 
 @Composable
 fun UploadedFileItem(title: String, description: String) {
+    val icon = when(title) {
+        "Boleto" -> Icons.Default.Description
+        "Nota Fiscal" -> Icons.Default.ShoppingCart
+        "Recibo" -> Icons.Default.Description
+        "Alimentação" -> Icons.Default.Fastfood
+        else -> Icons.Default.ShoppingCart
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            tint = Color(0xFFFFC107),
             modifier = Modifier
-                .size(48.dp)
-                .background(Color(0xFF363636), RoundedCornerShape(8.dp))
+                .size(40.dp)
+                .background(Color(0xFF363636), shape = CircleShape)
+                .padding(8.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
